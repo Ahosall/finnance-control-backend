@@ -23,7 +23,6 @@ model Transaction {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   userId      String   @db.ObjectId
   categoryId  String   @db.ObjectId
-  type        String
   amount      Float
   description String?
   date        DateTime @default(now())
@@ -35,11 +34,12 @@ model Transaction {
 }
 
 model Category {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId    String   @db.ObjectId
-  name      String
-  type      String
-  createdAt DateTime @default(now())
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String   @db.ObjectId
+  name            String
+  type            String
+  showOnDashboard Boolean  @default(false)
+  createdAt       DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id])
 

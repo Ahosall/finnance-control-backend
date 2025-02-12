@@ -17,11 +17,10 @@ export const createTransaction = async (data: TransactionInput) => {
   const transaction = await prisma.transaction.create({
     data: {
       amount: validatedData.amount,
-      type: validatedData.type,
       categoryId: category.id,
       userId: category.userId,
     },
   });
 
-  return transaction
+  return transaction;
 };
