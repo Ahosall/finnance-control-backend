@@ -2,7 +2,7 @@ import fp from "fastify-plugin";
 import fastifyJwt from "@fastify/jwt";
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 
-const jwtPlugin = fp(async (instance: FastifyInstance) => {
+async function jwtPlugin(instance: FastifyInstance) {
   instance.register(fastifyJwt, {
     secret: process.env.JWT_SECRET || "superblastermasterkey",
   });
@@ -17,6 +17,6 @@ const jwtPlugin = fp(async (instance: FastifyInstance) => {
       }
     }
   );
-});
+}
 
-export default jwtPlugin;
+export default fp(jwtPlugin, { name: "jwt-plugin" });

@@ -1,15 +1,26 @@
+/// <reference path="./@types/fastify.d.ts" />
+import "fastify";
+
 import Fastify from "fastify";
 import * as dotenv from "dotenv";
 
 import jwtPlugin from "./plugins/jwt";
 
+import transactionsRoutes from "./modules/transactions/transaction.routes";
+import usersRoutes from "./modules/users/user.routes";
+
 dotenv.config();
 
-const app = Fastify({
-  logger: true,
-});
+const app = Fastify();
 
-app.register(jwtPlugin);
+app.register(async (instance) => {
+  // Plugins
+  await instance.register(jwtPlugin);
+  
+  // Routes
+  await instance.register(transactionsRoutes);
+  await instance.register(usersRoutes);
+});
 
 const start = async () => {
   const { PORT } = process.env;
