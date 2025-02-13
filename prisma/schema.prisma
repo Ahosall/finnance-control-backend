@@ -45,3 +45,10 @@ model Category {
 
   transactions Transaction[]
 }
+
+model BalanceCache {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  balance   Float
+  createdAt DateTime @default(now())
+}
