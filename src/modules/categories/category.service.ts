@@ -17,12 +17,28 @@ export const createCategory = async (data: CategoryInput, userId: string) => {
   return category;
 };
 
-export const listCategories = async (userId: string) => {
+export const listCategories = async (
+  userId: string,
+  onlyForDashboard?: boolean
+) => {
   const categories = await prisma.category.findMany({
-    where: {
-      userId,
+    where: onlyForDashboard
+      ? {
+          userId,
+          showOnDashboard: true,
+        }
+      : { userId },
+    include: {
+      transactions: onlyForDashboard,
     },
   });
 
-  return categories;
+  return categories.map((category) => {
+    return category.transactions
+      ? {
+          ...category,
+          total: category.transactions.reduce((a, t) => a + t.amount, 0),
+        }
+      : category;
+  });
 };
