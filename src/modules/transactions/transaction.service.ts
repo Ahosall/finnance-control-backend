@@ -14,13 +14,33 @@ export const createTransaction = async (data: TransactionInput) => {
     throw new Error("A categoria selecionada não existe");
   }
 
+  // Implementar logica para ajustar saldo
+
   const transaction = await prisma.transaction.create({
     data: {
-      amount: validatedData.amount,
-      categoryId: category.id,
       userId: category.userId,
+      categoryId: category.id,
+      amount: validatedData.amount,
+      description: validatedData.description,
+      date: validatedData.date,
     },
   });
 
   return transaction;
+};
+
+export const listTransactions = async (
+  start: Date,
+  end: Date,
+  userId: string
+) => {
+  const transactions = await prisma.transaction.findMany({
+    where: { userId, date: { gte: start, lte: end } },
+    orderBy: { date: "asc" },
+    include: {
+      category: true,
+    },
+  });
+
+  return transactions;
 };
