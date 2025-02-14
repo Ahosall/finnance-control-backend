@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const TransactionSchema = z.object({
-  date: z.date(),
+  date: z.coerce.date(),
   categoryId: z.string(),
   amount: z.number(),
   description: z.string(),

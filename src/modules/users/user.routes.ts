@@ -6,7 +6,7 @@ export default async (instance: FastifyInstance) => {
   // Create user
   instance.post<{
     Body: UserInput;
-  }>("/users", async (req, rep) => {
+  }>("/", async (req, rep) => {
     try {
       await createUser(req.body);
       rep.status(201).send({ success: true });
@@ -26,7 +26,7 @@ export default async (instance: FastifyInstance) => {
 
     try {
       const { token } = await loginUser(email, password, instance);
-      rep.status(200).send(token);
+      rep.status(200).send({ token });
     } catch (err: any) {
       rep.status(401).send({ error: err.message });
     }

@@ -16,3 +16,13 @@ export const createCategory = async (data: CategoryInput, userId: string) => {
 
   return category;
 };
+
+export const listCategories = async (userId: string) => {
+  const categories = await prisma.category.findMany({
+    where: {
+      userId,
+    },
+  });
+
+  return categories;
+};
