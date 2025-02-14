@@ -1,17 +1,30 @@
 import { FastifyInstance } from "fastify";
+
+import {
+  createTransaction,
+  getTransactionById,
+  listTransactions,
+} from "./transaction.service";
 import { TransactionInput } from "./transaction.model";
-import { createTransaction, listTransactions } from "./transaction.service";
 
 interface IListTransactionsPeriod {
   start: string;
   end: string;
 }
 
+interface IGetTransaction {
+  id: string;
+}
+
+type TCreateTransaction = { Body: TransactionInput };
+type TListTransactions = { Querystring: IListTransactionsPeriod };
+type TGetTransaction = { Params: IGetTransaction };
+
 export default async (instance: FastifyInstance) => {
   const preConf = { preHandler: [instance.authenticate] };
 
   // Create transaction
-  instance.post<{ Body: TransactionInput }>("/", preConf, async (req, rep) => {
+  instance.post<TCreateTransaction>("/", preConf, async (req, rep) => {
     try {
       await createTransaction(req.body);
       rep.status(201).send({ success: true });
@@ -21,21 +34,37 @@ export default async (instance: FastifyInstance) => {
   });
 
   // List transactions by period
-  instance.get<{ Querystring: IListTransactionsPeriod }>(
-    "/",
-    preConf,
-    async (req, rep) => {
-      const { start, end } = req.query;
-      try {
-        const transactions = await listTransactions(
-          new Date(start),
-          new Date(end),
-          req.user.sub
+  instance.get<TListTransactions>("/", preConf, async (req, rep) => {
+    let { start, end } = req.query;
+    try {
+      if (!start || !end) {
+        throw new Error(
+          "Missing queries! Choose a period between one another."
         );
-        rep.status(200).send({ transactions });
-      } catch (err: any) {
-        rep.status(500).send({ error: err.message });
       }
+
+      const transactions = await listTransactions(
+        req.user.sub,
+        new Date(start + "T12:00:00.000Z"),
+        new Date(end + "T12:00:00.000Z")
+      );
+      rep.status(200).send({ transactions });
+    } catch (err: any) {
+      rep.status(500).send({ error: err.message });
     }
-  );
+  });
+
+  // Get transaction by id
+  instance.get<TGetTransaction>("/:id", preConf, async (req, rep) => {
+    try {
+      const transaction = await getTransactionById(req.params.id, req.user.sub);
+      if (!transaction) {
+        return rep.status(404).send({ message: "Transaction not found" });
+      }
+
+      rep.status(200).send({ transaction });
+    } catch (err: any) {
+      rep.status(500).send({ error: err.message });
+    }
+  });
 };

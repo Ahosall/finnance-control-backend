@@ -28,9 +28,9 @@ export const createTransaction = async (data: TransactionInput) => {
 };
 
 export const listTransactions = async (
+  userId: string,
   start: Date,
-  end: Date,
-  userId: string
+  end: Date
 ) => {
   const previousTransactions = await prisma.transaction.findMany({
     where: { userId, date: { lt: start } },
@@ -45,7 +45,7 @@ export const listTransactions = async (
       amount: true,
       description: true,
       date: true,
-      category: { select: { id: true, type: true } },
+      category: { select: { id: true, name: true, type: true } },
     },
   });
 
@@ -57,8 +57,18 @@ export const listTransactions = async (
 
   const transactionsWithBalance = transactions.map((t) => {
     currentBalance += t.category.type === "INCOME" ? t.amount : -t.amount;
-    return { ...t, balance: currentBalance };
+    return { ...t, balance: parseFloat(currentBalance.toFixed(2)) };
   });
 
   return transactionsWithBalance;
+};
+
+export const getTransactionById = async (
+  transactionId: string,
+  userId: string
+) => {
+  const transaction = await prisma.transaction.findUnique({
+    where: { id: transactionId, userId },
+  });
+  return transaction;
 };
