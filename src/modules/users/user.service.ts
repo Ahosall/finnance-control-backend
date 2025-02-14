@@ -43,12 +43,32 @@ export const loginUser = async (
   const jwtPayload = {
     iss: process.env.JWT_ISS,
     aud: "web-client",
-    exp: Date.now() + 21_600_000,
+    exp: Date.now() + (15 * 24 * 60 * 60 * 1000),
     iat: Date.now(),
     sub: user.id,
-    email: user.email,
   };
 
   const token = instance.jwt.sign(jwtPayload);
-  return { token };
+  return {
+    token,
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+    },
+  };
+};
+
+export const getUser = async (userId: string) => {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+  return user;
 };
