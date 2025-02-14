@@ -60,7 +60,7 @@ export const listTransactions = async (
     return { ...t, balance: parseFloat(currentBalance.toFixed(2)) };
   });
 
-  return transactionsWithBalance;
+  return transactionsWithBalance.reverse();
 };
 
 export const getTransactionById = async (
