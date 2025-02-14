@@ -22,22 +22,24 @@ export const listCategories = async (
   onlyForDashboard?: boolean
 ) => {
   const categories = await prisma.category.findMany({
-    where: onlyForDashboard
-      ? {
-          userId,
-          showOnDashboard: true,
-        }
-      : { userId },
-    include: {
-      transactions: onlyForDashboard,
+    where: onlyForDashboard ? { userId, showOnDashboard: true } : { userId },
+    select: {
+      id: true,
+      name: true,
+      type: true,
+      createdAt: true,
+      transactions: onlyForDashboard ? { select: { amount: true } } : false,
     },
   });
 
   return categories.map((category) => {
     return category.transactions
       ? {
-          ...category,
+          id: category.id,
+          name: category.name,
+          type: category.type,
           total: category.transactions.reduce((a, t) => a + t.amount, 0),
+          createdAt: category.createdAt,
         }
       : category;
   });

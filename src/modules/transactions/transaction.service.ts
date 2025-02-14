@@ -33,17 +33,20 @@ export const listTransactions = async (
   userId: string
 ) => {
   const previousTransactions = await prisma.transaction.findMany({
-    where: {
-      userId,
-      date: { lt: start },
-    },
-    include: { category: true },
+    where: { userId, date: { lt: start } },
+    select: { amount: true, category: { select: { type: true } } },
   });
 
   const transactions = await prisma.transaction.findMany({
     where: { userId, date: { gte: start, lte: end } },
     orderBy: { date: "asc" },
-    include: { category: true },
+    select: {
+      id: true,
+      amount: true,
+      description: true,
+      date: true,
+      category: { select: { id: true, type: true } },
+    },
   });
 
   let currentBalance = previousTransactions.reduce((amount, transaction) => {
