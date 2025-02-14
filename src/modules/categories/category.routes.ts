@@ -1,21 +1,27 @@
 import { FastifyInstance } from "fastify";
 import { CategoryInput } from "./category.model";
-import { createCategory } from "./category.service";
+import { createCategory, listCategories } from "./category.service";
 
 export default async (instance: FastifyInstance) => {
-  instance.post<{
-    Body: CategoryInput;
-  }>(
-    "/transactions",
-    { preHandler: [instance.authenticate] },
-    async (req, rep) => {
-      try {
-        console.log(req.user)
-        // await createCategory(req.body, req.user.);
-        rep.status(201).send({ success: true });
-      } catch (err: any) {
-        rep.status(400).send({ error: err.message });
-      }
+  const preConf = { preHandler: [instance.authenticate] };
+
+  // Create
+  instance.post<{ Body: CategoryInput }>("/", preConf, async (req, rep) => {
+    try {
+      await createCategory(req.body, req.user.sub);
+      rep.status(201).send({ success: true });
+    } catch (err: any) {
+      rep.status(400).send({ error: err.message });
     }
-  );
+  });
+
+  // List
+  instance.get("/", preConf, async (req, rep) => {
+    try {
+      const categories = await listCategories(req.user.sub);
+      rep.status(200).send({ categories });
+    } catch (err: any) {
+      rep.status(500).send({ error: err.message });
+    }
+  });
 };
