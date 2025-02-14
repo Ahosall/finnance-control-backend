@@ -14,8 +14,6 @@ export const createTransaction = async (data: TransactionInput) => {
     throw new Error("A categoria selecionada não existe");
   }
 
-  // Implementar logica para ajustar saldo
-
   const transaction = await prisma.transaction.create({
     data: {
       userId: category.userId,
@@ -34,13 +32,30 @@ export const listTransactions = async (
   end: Date,
   userId: string
 ) => {
+  const previousTransactions = await prisma.transaction.findMany({
+    where: {
+      userId,
+      date: { lt: start },
+    },
+    include: { category: true },
+  });
+
   const transactions = await prisma.transaction.findMany({
     where: { userId, date: { gte: start, lte: end } },
     orderBy: { date: "asc" },
-    include: {
-      category: true,
-    },
+    include: { category: true },
   });
 
-  return transactions;
+  let currentBalance = previousTransactions.reduce((amount, transaction) => {
+    return transaction.category.type === "INCOME"
+      ? amount + transaction.amount
+      : amount - transaction.amount;
+  }, 0);
+
+  const transactionsWithBalance = transactions.map((t) => {
+    currentBalance += t.category.type === "INCOME" ? t.amount : -t.amount;
+    return { ...t, balance: currentBalance };
+  });
+
+  return transactionsWithBalance;
 };
