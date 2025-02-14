@@ -4,6 +4,7 @@ import "fastify";
 import Fastify from "fastify";
 import * as dotenv from "dotenv";
 
+import corsPlugin from "./plugins/cors";
 import jwtPlugin from "./plugins/jwt";
 
 import usersRoutes from "./modules/users/user.routes";
@@ -16,6 +17,7 @@ const app = Fastify();
 
 app.register(async (instance) => {
   // Plugins
+  await instance.register(corsPlugin);
   await instance.register(jwtPlugin);
 
   // Routes

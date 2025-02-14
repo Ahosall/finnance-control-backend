@@ -12,6 +12,7 @@
   "author": "Ahosall (Feh's)",
   "license": "MIT",
   "dependencies": {
+    "@fastify/cors": "^10.0.2",
     "@fastify/jwt": "^9.0.4",
     "@prisma/client": "^6.3.1",
     "bcrypt-ts": "^5.0.3",
