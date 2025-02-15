@@ -72,3 +72,24 @@ export const getTransactionById = async (
   });
   return transaction;
 };
+
+export const updateTransaction = async (
+  transactionId: string,
+  data: TransactionInput
+) => {
+  const validatedData = TransactionSchema.parse(data);
+
+  const transaction = await prisma.transaction.update({
+    data: {
+      categoryId: validatedData.categoryId,
+      amount: validatedData.amount,
+      description: validatedData.description,
+      date: validatedData.date,
+    },
+    where: {
+      id: transactionId,
+    },
+  });
+
+  return transaction;
+};

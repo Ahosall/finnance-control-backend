@@ -4,6 +4,7 @@ import {
   createTransaction,
   getTransactionById,
   listTransactions,
+  updateTransaction,
 } from "./transaction.service";
 import { TransactionInput } from "./transaction.model";
 
@@ -19,6 +20,7 @@ interface IGetTransaction {
 type TCreateTransaction = { Body: TransactionInput };
 type TListTransactions = { Querystring: IListTransactionsPeriod };
 type TGetTransaction = { Params: IGetTransaction };
+type TPutTransaction = TGetTransaction & TCreateTransaction;
 
 export default async (instance: FastifyInstance) => {
   const preConf = { preHandler: [instance.authenticate] };
@@ -26,8 +28,8 @@ export default async (instance: FastifyInstance) => {
   // Create transaction
   instance.post<TCreateTransaction>("/", preConf, async (req, rep) => {
     try {
-      await createTransaction(req.body);
-      rep.status(201).send({ success: true });
+      const transaction = await createTransaction(req.body);
+      rep.status(201).send({ transaction });
     } catch (err: any) {
       rep.status(400).send({ error: err.message });
     }
@@ -65,6 +67,23 @@ export default async (instance: FastifyInstance) => {
       rep.status(200).send({ transaction });
     } catch (err: any) {
       rep.status(500).send({ error: err.message });
+    }
+  });
+
+  // Update transaction
+  instance.put<TPutTransaction>("/:id", preConf, async (req, rep) => {
+    try {
+      const exists = await getTransactionById(req.params.id, req.user.sub);
+      if (!exists) {
+        return rep.status(404).send({ message: "Transaction not found" });
+      }
+      const transaction = await updateTransaction(req.params.id, {
+        ...exists,
+        ...req.body,
+      });
+      rep.status(200).send({ transaction });
+    } catch (err: any) {
+      rep.status(400).send({ error: err.message });
     }
   });
 };
