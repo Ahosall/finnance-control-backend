@@ -14,12 +14,18 @@ interface IListTransactionsPeriod {
   end: string;
 }
 
+interface IListTransactionsSearch {
+  categoryId?: string;
+}
+
 interface IGetTransaction {
   id: string;
 }
 
 type TCreateTransaction = { Body: TransactionInput };
-type TListTransactions = { Querystring: IListTransactionsPeriod };
+type TListTransactions = {
+  Querystring: IListTransactionsPeriod & IListTransactionsSearch;
+};
 type TGetTransaction = { Params: IGetTransaction };
 type TPutTransaction = TGetTransaction & TCreateTransaction;
 type TDeleteTransaction = TGetTransaction;
@@ -39,7 +45,7 @@ export default async (instance: FastifyInstance) => {
 
   // List transactions by period
   instance.get<TListTransactions>("/", preConf, async (req, rep) => {
-    let { start, end } = req.query;
+    let { start, end, categoryId } = req.query;
     try {
       if (!start || !end) {
         throw new Error(
@@ -50,7 +56,8 @@ export default async (instance: FastifyInstance) => {
       const transactions = await listTransactions(
         req.user.sub,
         new Date(start + "T12:00:00.000Z"),
-        new Date(end + "T12:00:00.000Z")
+        new Date(end + "T12:00:00.000Z"),
+        categoryId === "dflt" ? undefined : categoryId
       );
       rep.status(200).send({ transactions });
     } catch (err: any) {

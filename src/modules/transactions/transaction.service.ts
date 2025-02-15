@@ -30,7 +30,8 @@ export const createTransaction = async (data: TransactionInput) => {
 export const listTransactions = async (
   userId: string,
   start: Date,
-  end: Date
+  end: Date,
+  categoryId?: string
 ) => {
   const previousTransactions = await prisma.transaction.findMany({
     where: { userId, date: { lt: start } },
@@ -60,7 +61,11 @@ export const listTransactions = async (
     return { ...t, balance: parseFloat(currentBalance.toFixed(2)) };
   });
 
-  return transactionsWithBalance.reverse();
+  return (
+    categoryId
+      ? transactionsWithBalance.filter((t) => t.category.id === categoryId)
+      : transactionsWithBalance
+  ).reverse();
 };
 
 export const getTransactionById = async (
