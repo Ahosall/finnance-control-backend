@@ -2,6 +2,7 @@ import { FastifyInstance } from "fastify";
 
 import {
   createTransaction,
+  deleteTransaction,
   getTransactionById,
   listTransactions,
   updateTransaction,
@@ -21,6 +22,7 @@ type TCreateTransaction = { Body: TransactionInput };
 type TListTransactions = { Querystring: IListTransactionsPeriod };
 type TGetTransaction = { Params: IGetTransaction };
 type TPutTransaction = TGetTransaction & TCreateTransaction;
+type TDeleteTransaction = TGetTransaction;
 
 export default async (instance: FastifyInstance) => {
   const preConf = { preHandler: [instance.authenticate] };
@@ -82,6 +84,21 @@ export default async (instance: FastifyInstance) => {
         ...req.body,
       });
       rep.status(200).send({ transaction });
+    } catch (err: any) {
+      rep.status(400).send({ error: err.message });
+    }
+  });
+
+  // Delete transaction
+  instance.delete<TDeleteTransaction>("/:id", preConf, async (req, rep) => {
+    try {
+      const exists = await getTransactionById(req.params.id, req.user.sub);
+      if (!exists) {
+        return rep.status(404).send({ message: "Transaction not found" });
+      }
+
+      await deleteTransaction(req.params.id);
+      rep.status(200).send({ success: true });
     } catch (err: any) {
       rep.status(400).send({ error: err.message });
     }

@@ -93,3 +93,13 @@ export const updateTransaction = async (
 
   return transaction;
 };
+
+export const deleteTransaction = async (transactionId: string) => {
+  const result = await prisma.transaction.delete({
+    where: {
+      id: transactionId,
+    },
+  });
+
+  return result;
+};
