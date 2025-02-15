@@ -28,6 +28,7 @@ export const listCategories = async (
       name: true,
       type: true,
       createdAt: true,
+      showOnDashboard: true,
       transactions: onlyForDashboard ? { select: { amount: true } } : false,
     },
   });
@@ -43,4 +44,33 @@ export const listCategories = async (
         }
       : category;
   });
+};
+
+export const getCategoryById = async (categoryId: string, userId: string) => {
+  return await prisma.category.findUnique({
+    where: {
+      id: categoryId,
+      userId,
+    },
+  });
+};
+
+export const updateCategory = async (
+  categoryId: string,
+  data: CategoryInput
+) => {
+  const validatedData = CategorySchema.parse(data);
+
+  const category = await prisma.category.update({
+    data: {
+      name: validatedData.name,
+      showOnDashboard: data.showOnDashboard,
+      type: validatedData.type,
+    },
+    where: {
+      id: categoryId,
+    },
+  });
+
+  return category;
 };
